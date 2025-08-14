@@ -12,7 +12,8 @@ const allowedOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
-    'https://personachatbot1.onrender.com'
+    'https://personachatbot1.onrender.com',
+    'https://personachatbot-1ygw.onrender.com' // Added production backend domain
 ];
 
 app.use(cors({
