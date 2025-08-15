@@ -1,46 +1,57 @@
-import {configDotenv} from "dotenv";
-configDotenv({quiet: true});
+import { configDotenv } from "dotenv";
+configDotenv({ quiet: true });
 import OpenAI from "openai";
 
-import {systemPromptHitesh, systemPromptPiyush} from "../prompt.js";
+import { systemPromptHitesh, systemPromptPiyush } from "../prompt.js";
 
 const openai = new OpenAI({
     apiKey: process.env.GEMINI_API_KEY,
     baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/"
 });
 
-async function generateResponse(persona, userMessage = "Hello sir!") {
-    // console.log("Generating response for user message:", userMessage);
-    console.log(`Persona: ${persona}`);
-    
-    // const systemPrompt = persona === "hitesh" || "Hitesh Choudhary" ? systemPromptHitesh : systemPromptPiyush;
-    let systemPrompt = ""
-    if(persona === "hitesh" || persona === "Hitesh Choudhary"){
-        systemPrompt = systemPromptHitesh
-    }else{
-        systemPrompt = systemPromptPiyush
-    }
-    
-    const response = await openai.chat.completions.create({
-    model: "gemini-2.0-flash",
-    messages: [
-        { role: "system", content: systemPrompt },
-        {
-            role: "user",
-            content: userMessage,
-        },
-        
-    ],
-});
+// Storing conversation history locally
+let conversationHistory = [];
 
-console.log(response.choices[0].message);
-    const content = response.choices[0].message.content;
-    const cleanedContent = content.replace(/```json\n|\n```/g, '');
-    // console.log("Response from Gemini: ", content);
+async function generateResponse(persona, userMessage = "Hello sir!") {
+    console.log(`Persona: ${persona}`);
+
+    let systemPrompt = "";
+    if (persona === "hitesh" || persona === "Hitesh Choudhary") {
+        systemPrompt = systemPromptHitesh;
+    } else {
+        systemPrompt = systemPromptPiyush;
+    }
+
+    // Adding the system prompt to the conversation history
+    conversationHistory.push({ role: "system", content: systemPrompt });
+
+    // Adding the current user message to the conversation history
+    conversationHistory.push({
+        role: "user",
+        content: userMessage
+    });
+
+    const response = await openai.chat.completions.create({
+        model: "gemini-2.0-flash",
+        messages: conversationHistory,
+    });
+
+    const assistantMessage = response.choices[0].message.content;
+
+    conversationHistory.push({
+        role: "assistant",
+        content: assistantMessage
+    });
+
+    const cleanedContent = assistantMessage.replace(/```json\n|\n```/g, '');
     
-    const jsonResponse = JSON.parse(cleanedContent);
-    return jsonResponse;
+    try {
+        const jsonResponse = JSON.parse(cleanedContent);
+        return jsonResponse;
+    } catch (error) {
+        console.error("Error parsing response:", error);
+        return cleanedContent;
+    }
 }
 
-// generateResponse(systemPrompt).catch(console.error);
-export { generateResponse }
+export { generateResponse };

@@ -13,8 +13,7 @@ More about yourself:
     2. Give the answer directly in the JSON format.
     3. No need to return the steps of thoughts
     4. Give the replies short and crisp
-    5. Elaborate only when asked to elaborate or when you think it is necessary
-    6. Make sure not to include any formatting like backticks in your responses.
+    5. Make sure not to include any formatting like backticks in your responses.
 
     Output Format:
     {
